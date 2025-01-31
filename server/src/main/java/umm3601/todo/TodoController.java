@@ -311,33 +311,23 @@ public class TodoController implements Controller {
     return result.toString();
   }
 
-  /**
-   * Setup routes for the `todo` collection endpoints.
-   *
-   * These endpoints are:
-   *   - `GET /api/todos/:id`
-   *       - Get the specified todo
-   *   - `GET /api/todos?age=NUMBER&company=STRING&name=STRING`
-   *      - List todos, filtered using query parameters
-   *      - `age`, `company`, and `name` are optional query parameters
-   *   - `GET /api/todosByCompany`
-   *     - Get todo names and IDs, possibly filtered, grouped by company
-   *   - `DELETE /api/todos/:id`
-   *      - Delete the specified todo
-   *   - `POST /api/todos`
-   *      - Create a new todo
-   *      - The todo info is in the JSON body of the HTTP request
-   *
-   * GROUPS SHOULD CREATE THEIR OWN CONTROLLERS THAT IMPLEMENT THE
-   * `Controller` INTERFACE FOR WHATEVER DATA THEY'RE WORKING WITH.
-   * You'll then implement the `addRoutes` method for that controller,
-   * which will set up the routes for that data. The `Server#setupRoutes`
-   * method will then call `addRoutes` for each controller, which will
-   * add the routes for that controller's data.
-   *
-   * @param server The Javalin server instance
-   * @param todoController The controller that handles the todo endpoints
-   */
+
+
+
+  //Limiting the number of todos that are displayed
+
+  private int limit(Context ctx) {
+    if(ctx.queryParamMap().containsKey(LIMIT_KEY)) {
+      int targetLimit = ctx.queryParamAsClass(LIMIT_KEY, Integer.class)
+      .check(it -> it > 0, "Limit should be greater than 0. You gave" + ctx.queryParamMap().containsKey(LIMIT_KEY))
+      .get();
+      return targetLimit;
+    } else {
+      return (int) todoCollection.countDocuments();
+    }
+  }
+
+
   public void addRoutes(Javalin server) {
     // Get the specified todo
     server.get(API_TODO_BY_ID, this::getTodo);
