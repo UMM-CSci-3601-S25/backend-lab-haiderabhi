@@ -9,7 +9,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-//import java.util.Map;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -41,6 +41,8 @@ public class TodoController implements Controller {
   static final String STATUS_KEY = "status";
   static final String BODY_KEY = "body";
   static final String CATEGORY_KEY = "category";
+  static final String LIMIT_KEY = "limit";
+  static final String ORDER_SORT_KEY = "order";
 
   //private static final String STATUS_REGEX = "^(complete|incomplete)$";
   private static final String CATEGORY_REGEX = "^(video games|homework|groceries|software design)$";
@@ -64,7 +66,7 @@ public class TodoController implements Controller {
   /**
    * Set the JSON body of the response to be the single todo
    * specified by the `id` parameter in the request
-   *
+   *id
    * @param ctx a Javalin HTTP context
    */
   public void getTodo(Context ctx) {
@@ -101,6 +103,7 @@ public class TodoController implements Controller {
     ArrayList<Todo> matchingTodos = todoCollection
       .find(combinedFilter)
       .sort(sortingOrder)
+//      .limit(limit(ctx))
       .into(new ArrayList<>());
 
     // Set the JSON body of the response to be the list of todos returned by the database.
@@ -172,6 +175,10 @@ public class TodoController implements Controller {
 
     return combinedFilter;
   }
+  // what does the code above do?
+  //
+
+
 
   /**
    * Construct a Bson sorting document to use in the `sort` method based on the
@@ -192,114 +199,12 @@ public class TodoController implements Controller {
     // Sort the results. Use the `sortby` query param (default "name")
     // as the field to sort by, and the query param `sortorder` (default
     // "asc") to specify the sort order.
-    String sortBy = Objects.requireNonNullElse(ctx.queryParam("sortby"), "name");
+    String sortBy = Objects.requireNonNullElse(ctx.queryParam("sortby"), "owner");
     String sortOrder = Objects.requireNonNullElse(ctx.queryParam("sortorder"), "asc");
     Bson sortingOrder = sortOrder.equals("desc") ?  Sorts.descending(sortBy) : Sorts.ascending(sortBy);
     return sortingOrder;
   }
 
-  /**
-   * Set the JSON body of the response to be a list of all the todo names and IDs
-   * returned from the database, grouped by company
-   *
-   * This "returns" a list of todo names and IDs, grouped by company in the JSON
-   * body of the response. The todo names and IDs are stored in `todoIdName` objects,
-   * and the company name, the number of todos in that company, and the list of todo
-   * names and IDs are stored in `todoByCompany` objects.
-   *
-   * @param ctx a Javalin HTTP context that provides the query parameters
-   *   used to sort the results. We support either sorting by company name
-   *   (in either `asc` or `desc` order) or by the number of todos in the
-   *   company (`count`, also in either `asc` or `desc` order).
-   */
-
- /* public void getTodosGroupedByCompany(Context ctx) {
-    // We'll support sorting the results either by company name (in either `asc` or `desc` order)
-    // or by the number of todos in the company (`count`, also in either `asc` or `desc` order).
-    String sortBy = Objects.requireNonNullElse(ctx.queryParam("sortBy"), "_id");
-    if (sortBy.equals("company")) {
-      sortBy = "_id";
-    }
-    String sortOrder = Objects.requireNonNullElse(ctx.queryParam("sortOrder"), "asc");
-    Bson sortingOrder = sortOrder.equals("desc") ?  Sorts.descending(sortBy) : Sorts.ascending(sortBy);
-
-    // The `todoByCompany` class is a simple class that has fields for the company
-    // name, the number of todos in that company, and a list of todo names and IDs
-    // (using the `todoIdName` class to store the todo names and IDs).
-    // We're going to use the aggregation pipeline to group todos by company, and
-    // then count the number of todos in each company. We'll also collect the todo
-    // names and IDs for each todo in each company. We'll then convert the results
-    // of the aggregation pipeline to `todoByCompany` objects.
-
-    ArrayList<TodoByCompany> matchingTodos = todoCollection
-      // The following aggregation pipeline groups todos by company, and
-      // then counts the number of todos in each company. It also collects
-      // the todo names and IDs for each todo in each company.
-      .aggregate(
-        List.of(
-          // Project the fields we want to use in the next step, i.e., the _id, name, and company fields
-          new Document("$project", new Document("_id", 1).append("name", 1).append("company", 1)),
-          // Group the todos by company, and count the number of todos in each company
-          new Document("$group", new Document("_id", "$company")
-            // Count the number of todos in each company
-            .append("count", new Document("$sum", 1))
-            // Collect the todo names and IDs for each todo in each company
-            .append("todos", new Document("$push", new Document("_id", "$_id").append("name", "$name")))),
-          // Sort the results. Use the `sortby` query param (default "company")
-          // as the field to sort by, and the query param `sortorder` (default
-          // "asc") to specify the sort order.
-          new Document("$sort", sortingOrder)
-        ),
-        // Convert the results of the aggregation pipeline to todoGroupResult objects
-        // (i.e., a list of todoGroupResult objects). It is necessary to have a Java type
-        // to convert the results to, and the JacksonMongoCollection will do this for us.
-        todoByCompany.class
-      )
-      .into(new ArrayList<>());
-
-    ctx.json(matchingTodos);
-    ctx.status(HttpStatus.OK);
-  }*/
-
-  /**
-   * Add a new todo using information from the context
-   * (as long as the information gives "legal" values to todo fields)
-   *
-   * @param ctx a Javalin HTTP context that provides the todo info
-   *  in the JSON body of the request
-   */
-
-
-
-
-  /**
-   * Utility function to generate an URI that points
-   * at a unique avatar image based on a todo's email.
-   *
-   * This uses the service provided by gravatar.com; there
-   * are numerous other similar services that one could
-   * use if one wished.
-   *
-   * YOU DON'T NEED TO USE THIS FUNCTION FOR THE TODOS.
-   *
-
-  //String generateAvatar(String email) {
-  //  String avatar;
-  //  try {
-      // generate unique md5 code for identicon
-  //    avatar = "https://gravatar.com/avatar/" + md5(email) + "?d=identicon";
-  //  } catch (NoSuchAlgorithmException ignored) {
-      // set to mystery person
-  //    avatar = "https://gravatar.com/avatar/?d=mp";
-  //  }
-  //  return avatar;
-  //}
-
-  /**
-   * Utility function to generate the md5 hash for a given string
-   *
-   * @param str the string to generate a md5 for
-   */
   public String md5(String str) throws NoSuchAlgorithmException {
     MessageDigest md = MessageDigest.getInstance("MD5");
     byte[] hashInBytes = md.digest(str.toLowerCase().getBytes(StandardCharsets.UTF_8));
