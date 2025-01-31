@@ -128,20 +128,38 @@ public class TodoController implements Controller {
   private Bson constructFilter(Context ctx) {
     List<Bson> filters = new ArrayList<>(); // start with an empty list of filters
 
-  //  if (ctx.queryParamMap().containsKey(AGE_KEY)) {
-  //    int targetAge = ctx.queryParamAsClass(AGE_KEY, Integer.class)
-  //      .check(it -> it > 0, "todo's age must be greater than zero; you provided " + ctx.queryParam(AGE_KEY))
-  //      .check(it -> it < REASONABLE_AGE_LIMIT,
-  //        "todo's age must be less than " + REASONABLE_AGE_LIMIT + "; you provided " + ctx.queryParam(AGE_KEY))
-  //      .get();
-  //    filters.add(eq(AGE_KEY, targetAge));
-  //  }
-
-    if (ctx.queryParamMap().containsKey(STATUS_KEY)) {
-      Pattern pattern = Pattern.compile(Pattern.quote(ctx.queryParam(STATUS_KEY)), Pattern.CASE_INSENSITIVE);
-      filters.add(regex(STATUS_KEY, pattern));
+// Checks if the we search for a word in the body and returns nothing
+    if(ctx.queryParamMap().containsKey(BODY_KEY)) {
+      String targetContent = ctx.queryParam(BODY_KEY);
+      Pattern pattern = Pattern.compile(targetContent, Pattern.CASE_INSENSITIVE);
+      filters.add(regex("body", pattern));
     }
 
+    //Checks if the status is complete or incomplete and returns true or false status.
+    if (ctx.queryParamMap().containsKey(STATUS_KEY)) {
+      String statusParam = ctx.queryParam(STATUS_KEY);
+      boolean targetStatus;
+      if(statusParam.equalsIgnoreCase("complete")) {
+        targetStatus = true;
+      } else if (statusParam.equalsIgnoreCase("incomplete")) {
+        targetStatus = false;
+      } else {
+        throw new BadRequestResponse("Invalid status request");
+      }
+      filters.add(eq(STATUS_KEY, targetStatus));
+    }
+
+
+
+
+    // Filters Todos by the owner name.
+    if (ctx.queryParamMap().containsKey(OWNER_KEY)) {
+    String targetOwner = ctx.queryParam(OWNER_KEY);
+      filters.add(regex("owner", Pattern.compile(targetOwner, Pattern.CASE_INSENSITIVE)));
+    }
+
+
+    // Filters Todos by categories.
     if (ctx.queryParamMap().containsKey(CATEGORY_KEY)) {
       String role = ctx.queryParamAsClass(CATEGORY_KEY, String.class)
         .check(it -> it.matches(CATEGORY_REGEX), "todo must have a legal todo category")
