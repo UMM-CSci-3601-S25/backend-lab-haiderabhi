@@ -29,9 +29,10 @@ public class Todo {
   public String _id;
 
   public String owner;
-  public Boolean status;
+  public boolean status;
   public String body;
   public String category;
+  public String limit;
   //public String avatar;
   //public String role;
 

@@ -3,11 +3,18 @@ package umm3601.todo;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.regex;
+//import static org.junit.jupiter.api.Assertions.assertEquals;
+//import static org.mockito.Mockito.verify;
+//import static org.mockito.Mockito.when;
 
+//import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+//import java.util.Arrays;
+//import java.util.Collections;
+//import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,6 +24,7 @@ import org.bson.Document;
 import org.bson.UuidRepresentation;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+//import org.jetbrains.annotations.TestOnly;
 import org.mongojack.JacksonMongoCollection;
 
 import com.mongodb.client.MongoDatabase;
@@ -224,7 +232,7 @@ public class TodoController implements Controller {
   private int limit(Context ctx) {
     if(ctx.queryParamMap().containsKey(LIMIT_KEY)) {
       int targetLimit = ctx.queryParamAsClass(LIMIT_KEY, Integer.class)
-      .check(it -> it > 0, "Limit should be greater than 0. You gave" + ctx.queryParamMap().containsKey(LIMIT_KEY))
+      .check(it -> it > 0, "Limit should be greater than 0. You gave" + ctx.queryParam(LIMIT_KEY))
       .get();
       return targetLimit;
     } else {
