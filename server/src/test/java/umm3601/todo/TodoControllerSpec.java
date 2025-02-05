@@ -51,14 +51,12 @@ import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
-import io.javalin.json.JavalinJackson;
 //import io.javalin.validation.BodyValidator;
 import io.javalin.validation.Validation;
 //import io.javalin.validation.ValidationError;
 //import io.javalin.validation.ValidationException;
 import io.javalin.validation.Validator;
 //import umm3601.user.UserController;
-import umm3601.user.UserController;
 
 /**
  * Tests the logic of the UserController
@@ -84,8 +82,6 @@ import umm3601.user.UserController;
    private static MongoClient mongoClient;
    private static MongoDatabase db;
 
-   // Used to translate between JSON and POJOs.
-   private static JavalinJackson javalinJackson = new JavalinJackson();
 
    @Mock
    private Context ctx;
@@ -222,7 +218,7 @@ import umm3601.user.UserController;
    // Create a validator that confirms that when we ask for the value associated with
    // `LIMIT_KEY` _as an integer_, we get back the integer value 2.
    Validation validation = new Validation();
-   Validator<Integer> validator = validation.validator(TodoController.LIMIT_KEY,Integer.class, limitString);
+   Validator<Integer> validator = validation.validator(TodoController.LIMIT_KEY, Integer.class, limitString);
    when(ctx.queryParamAsClass(TodoController.LIMIT_KEY, Integer.class)).thenReturn(validator);
    when(ctx.queryParam(TodoController.LIMIT_KEY)).thenReturn(limitString);
 
@@ -239,7 +235,6 @@ import umm3601.user.UserController;
   void canGetTodosWithStatusTrue() throws IOException {
     Map<String, List<String>> queryParams = new HashMap<>();
 
-    Boolean status = true;
     String statusString = "complete";
 
     queryParams.put(TodoController.STATUS_KEY, Arrays.asList(new String[] {statusString}));
@@ -264,7 +259,6 @@ import umm3601.user.UserController;
   void canGetTodosWithStatusFalse() throws IOException {
     Map<String, List<String>> queryParams = new HashMap<>();
 
-    Boolean status = false;
     String statusStringF = "incomplete";
 
     queryParams.put(TodoController.STATUS_KEY, Arrays.asList(new String[] {statusStringF}));
@@ -295,7 +289,7 @@ void canGetTodosWithCategory() throws IOException {
 Validation validation = new Validation();
     Validator<String> validator = validation.validator(TodoController.CATEGORY_KEY, String.class, categoryString);
 
-  when(ctx.queryParamAsClass(TodoController.CATEGORY_KEY,String.class)).thenReturn(validator);
+  when(ctx.queryParamAsClass(TodoController.CATEGORY_KEY, String.class)).thenReturn(validator);
 
   todoController.getTodos(ctx);
 

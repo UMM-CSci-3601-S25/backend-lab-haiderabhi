@@ -8,15 +8,11 @@ import static com.mongodb.client.model.Filters.regex;
 //import static org.mockito.Mockito.when;
 
 //import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 //import java.util.Arrays;
 //import java.util.Collections;
 //import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -45,7 +41,7 @@ public class TodoController implements Controller {
 
   private static final String API_TODOS = "/api/todos";
   private static final String API_TODO_BY_ID = "/api/todos/{id}";
-  static final String OWNER_KEY= "owner";
+  static final String OWNER_KEY = "owner";
    public static final String STATUS_KEY = "status";
   static final String BODY_KEY = "body";
   public static final String CATEGORY_KEY = "category";
@@ -140,7 +136,7 @@ public class TodoController implements Controller {
     List<Bson> filters = new ArrayList<>(); // start with an empty list of filters
 
 // Checks if the we search for a word in the body and returns nothing
-    if(ctx.queryParamMap().containsKey(BODY_KEY)) {
+    if (ctx.queryParamMap().containsKey(BODY_KEY)) {
       String targetContent = ctx.queryParam(BODY_KEY);
       Pattern pattern = Pattern.compile(targetContent, Pattern.CASE_INSENSITIVE);
       filters.add(regex("body", pattern));
@@ -150,7 +146,7 @@ public class TodoController implements Controller {
     if (ctx.queryParamMap().containsKey(STATUS_KEY)) {
       String statusParam = ctx.queryParam(STATUS_KEY);
       boolean targetStatus;
-      if(statusParam.equalsIgnoreCase("complete")) {
+      if (statusParam.equalsIgnoreCase("complete")) {
         targetStatus = true;
       } else if (statusParam.equalsIgnoreCase("incomplete")) {
         targetStatus = false;
@@ -216,7 +212,7 @@ public class TodoController implements Controller {
   //Limiting the number of todos that are displayed
 
   private int limit(Context ctx) {
-    if(ctx.queryParamMap().containsKey(LIMIT_KEY)) {
+    if (ctx.queryParamMap().containsKey(LIMIT_KEY)) {
       int targetLimit = ctx.queryParamAsClass(LIMIT_KEY, Integer.class)
       .check(it -> it > 0, "Limit should be greater than 0. You gave" + ctx.queryParam(LIMIT_KEY))
       .get();
