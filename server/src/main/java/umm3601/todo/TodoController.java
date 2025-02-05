@@ -46,10 +46,10 @@ public class TodoController implements Controller {
   private static final String API_TODOS = "/api/todos";
   private static final String API_TODO_BY_ID = "/api/todos/{id}";
   static final String OWNER_KEY= "owner";
-  static final String STATUS_KEY = "status";
+   public static final String STATUS_KEY = "status";
   static final String BODY_KEY = "body";
-  static final String CATEGORY_KEY = "category";
-  static final String LIMIT_KEY = "limit";
+  public static final String CATEGORY_KEY = "category";
+  public static final String LIMIT_KEY = "limit";
   static final String ORDER_SORT_KEY = "order";
 
   //private static final String STATUS_REGEX = "^(complete|incomplete)$";
