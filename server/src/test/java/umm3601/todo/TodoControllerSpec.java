@@ -1,26 +1,28 @@
 package umm3601.todo;
 
-import static com.mongodb.client.model.Filters.eq;
+//import static com.mongodb.client.model.Filters.eq;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+//import static org.junit.jupiter.api.Assertions.assertNotEquals;
+//import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
+//import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
+//import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+//import java.util.stream.Collectors;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -29,14 +31,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatcher;
+//import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+//import com.fasterxml.jackson.core.JsonProcessingException;
+//import com.fasterxml.jackson.databind.JsonMappingException;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
@@ -49,13 +51,12 @@ import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
-import io.javalin.json.JavalinJackson;
-import io.javalin.validation.BodyValidator;
+//import io.javalin.validation.BodyValidator;
 import io.javalin.validation.Validation;
-import io.javalin.validation.ValidationError;
-import io.javalin.validation.ValidationException;
+//import io.javalin.validation.ValidationError;
+//import io.javalin.validation.ValidationException;
 import io.javalin.validation.Validator;
-import umm3601.user.UserController;
+//import umm3601.user.UserController;
 
 /**
  * Tests the logic of the UserController
@@ -81,17 +82,15 @@ import umm3601.user.UserController;
    private static MongoClient mongoClient;
    private static MongoDatabase db;
 
-   // Used to translate between JSON and POJOs.
-   private static JavalinJackson javalinJackson = new JavalinJackson();
 
    @Mock
    private Context ctx;
 
    @Captor
-   private ArgumentCaptor<ArrayList<Todo>> userArrayListCaptor;
+   private ArgumentCaptor<ArrayList<Todo>> todoArrayListCaptor;
 
    @Captor
-   private ArgumentCaptor<Todo> userCaptor;
+   private ArgumentCaptor<Todo> todoCaptor;
 
    @Captor
    private ArgumentCaptor<Map<String, String>> mapCaptor;
@@ -173,16 +172,16 @@ import umm3601.user.UserController;
      verify(mockServer, Mockito.atLeast(2)).get(any(), any());
    }
 
-   //@Test
-   //void canGetAllUsers() throws IOException {
+   @Test
+   void canGetAllUsers() throws IOException {
      // When something asks the (mocked) context for the queryParamMap,
      // it will return an empty map (since there are no query params in
      // this case where we want all users).
-  //   when(ctx.queryParamMap()).thenReturn(Collections.emptyMap());
+     when(ctx.queryParamMap()).thenReturn(Collections.emptyMap());
 
      // Now, go ahead and ask the userController to getUsers
      // (which will, indeed, ask the context for its queryParamMap)
-  //   todoController.getTodos(ctx);
+    todoController.getTodos(ctx);
 
      // We are going to capture an argument to a function, and the type of
      // that argument will be of type ArrayList<User> (we said so earlier
@@ -197,33 +196,113 @@ import umm3601.user.UserController;
      // Specifically, we want to pay attention to the ArrayList<User> that
      // is passed as input when ctx.json is called --- what is the argument
      // that was passed? We capture it and can refer to it later.
-    //verify(ctx).json(todoArrayListCaptor.capture());
-  //  verify(ctx).status(HttpStatus.OK);
+    verify(ctx).json(todoArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
 
      // Check that the database collection holds the same number of documents
      // as the size of the captured List<User>
-  //   assertEquals(
-  //       db.getCollection("todos").countDocuments(),
-  //       userArrayListCaptor.getValue().size());
-  // }
+       assertEquals(
+        db.getCollection("todos").countDocuments(),
+        todoArrayListCaptor.getValue().size());
+   }
 
-  //@Test
-  //void canGetTodosWithStatusTrue() throws IOException {
-  //  Map<String, List<String>> queryParams = new HashMap<>();
+   @Test
+   void canGetTodosWithLimit() throws IOException {
+   Map<String, List<String>> queryParams = new HashMap<>();
+   Integer limit = 2;
+   String limitString = limit.toString();
 
-  //  queryParams.put(UserController.STATUS_KEY, Arrays.asList(new String[] {"true"}));
-  //  when(ctx.queryParamMap()).thenReturn(queryParams);
-  //  when(ctx.queryParam(UserController.STATUS_KEY)).thenReturn("true");
+   queryParams.put(TodoController.LIMIT_KEY, Arrays.asList(new String[] {limitString}));
+   when(ctx.queryParamMap()).thenReturn(queryParams);
 
-  //  todoController.getTodos(ctx);
+   // Create a validator that confirms that when we ask for the value associated with
+   // `LIMIT_KEY` _as an integer_, we get back the integer value 2.
+   Validation validation = new Validation();
+   Validator<Integer> validator = validation.validator(TodoController.LIMIT_KEY, Integer.class, limitString);
+   when(ctx.queryParamAsClass(TodoController.LIMIT_KEY, Integer.class)).thenReturn(validator);
+   when(ctx.queryParam(TodoController.LIMIT_KEY)).thenReturn(limitString);
 
-  //  verify(ctx).json(userArrayListCaptor.capture());
-  //  verify(ctx).status(HttpStatus.OK);
+   todoController.getTodos(ctx);
+   verify(ctx).json(todoArrayListCaptor.capture());
+   verify(ctx).status(HttpStatus.OK);
 
-  //  for (Todo todo : todoArrayListCaptor.getValue()) {
-  //    assertTrue(todo.status);
-  //  }
-  //}
+   // Confirm that there are only 2 values returned since we limited to 2.
+   assertEquals(2, todoArrayListCaptor.getValue().size());
+   }
+
+
+  @Test
+  void canGetTodosWithStatusTrue() throws IOException {
+    Map<String, List<String>> queryParams = new HashMap<>();
+
+    String statusString = "complete";
+
+    queryParams.put(TodoController.STATUS_KEY, Arrays.asList(new String[] {statusString}));
+    when(ctx.queryParamMap()).thenReturn(queryParams);
+    when(ctx.queryParam(TodoController.STATUS_KEY)).thenReturn(statusString);
+
+    todoController.getTodos(ctx);
+
+    //Validation validation = new Validation();
+
+
+
+   verify(ctx).json(todoArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+   for (Todo todo : todoArrayListCaptor.getValue()) {
+    assertTrue(todo.status);
+   }
+  }
+
+  @Test
+  void canGetTodosWithStatusFalse() throws IOException {
+    Map<String, List<String>> queryParams = new HashMap<>();
+
+    String statusStringF = "incomplete";
+
+    queryParams.put(TodoController.STATUS_KEY, Arrays.asList(new String[] {statusStringF}));
+    when(ctx.queryParamMap()).thenReturn(queryParams);
+    when(ctx.queryParam(TodoController.STATUS_KEY)).thenReturn(statusStringF);
+
+    todoController.getTodos(ctx);
+
+    //Validation validation = new Validation();
+
+
+
+   verify(ctx).json(todoArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+   for (Todo todo : todoArrayListCaptor.getValue()) {
+    assertFalse(todo.status);
+   }
+  }
+
+@Test
+void canGetTodosWithCategory() throws IOException {
+  Map<String, List<String>> queryParams = new HashMap<>();
+  String categoryString = "homework";
+  queryParams.put(TodoController.CATEGORY_KEY, Arrays.asList(new String[] {categoryString}));
+  when(ctx.queryParamMap()).thenReturn(queryParams);
+
+Validation validation = new Validation();
+    Validator<String> validator = validation.validator(TodoController.CATEGORY_KEY, String.class, categoryString);
+
+  when(ctx.queryParamAsClass(TodoController.CATEGORY_KEY, String.class)).thenReturn(validator);
+
+  todoController.getTodos(ctx);
+
+  verify(ctx).json(todoArrayListCaptor.capture());
+  verify(ctx).status(HttpStatus.OK);
+
+  for (Todo todo : todoArrayListCaptor.getValue()) {
+    assertEquals(categoryString, todo.category);
+  }
+
+
+}
+
 
   @Test
   void getTodoWithExistentId() throws IOException {
@@ -232,10 +311,10 @@ import umm3601.user.UserController;
 
     todoController.getTodo(ctx);
 
-    verify(ctx).json(userCaptor.capture());
+    verify(ctx).json(todoCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
-    assertEquals("Sam", userCaptor.getValue().owner);
-    assertEquals(samsId.toHexString(), userCaptor.getValue()._id);
+    assertEquals("Sam", todoCaptor.getValue().owner);
+    assertEquals(samsId.toHexString(), todoCaptor.getValue()._id);
   }
 
   @Test

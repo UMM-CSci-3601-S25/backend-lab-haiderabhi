@@ -8,15 +8,11 @@ import static com.mongodb.client.model.Filters.regex;
 //import static org.mockito.Mockito.when;
 
 //import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 //import java.util.Arrays;
 //import java.util.Collections;
 //import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -45,11 +41,11 @@ public class TodoController implements Controller {
 
   private static final String API_TODOS = "/api/todos";
   private static final String API_TODO_BY_ID = "/api/todos/{id}";
-  static final String OWNER_KEY= "owner";
-  static final String STATUS_KEY = "status";
+  static final String OWNER_KEY = "owner";
+   public static final String STATUS_KEY = "status";
   static final String BODY_KEY = "body";
-  static final String CATEGORY_KEY = "category";
-  static final String LIMIT_KEY = "limit";
+  public static final String CATEGORY_KEY = "category";
+  public static final String LIMIT_KEY = "limit";
   static final String ORDER_SORT_KEY = "order";
 
   //private static final String STATUS_REGEX = "^(complete|incomplete)$";
@@ -111,7 +107,7 @@ public class TodoController implements Controller {
     ArrayList<Todo> matchingTodos = todoCollection
       .find(combinedFilter)
       .sort(sortingOrder)
-//      .limit(limit(ctx))
+      .limit(limit(ctx))
       .into(new ArrayList<>());
 
     // Set the JSON body of the response to be the list of todos returned by the database.
@@ -140,7 +136,7 @@ public class TodoController implements Controller {
     List<Bson> filters = new ArrayList<>(); // start with an empty list of filters
 
 // Checks if the we search for a word in the body and returns nothing
-    if(ctx.queryParamMap().containsKey(BODY_KEY)) {
+    if (ctx.queryParamMap().containsKey(BODY_KEY)) {
       String targetContent = ctx.queryParam(BODY_KEY);
       Pattern pattern = Pattern.compile(targetContent, Pattern.CASE_INSENSITIVE);
       filters.add(regex("body", pattern));
@@ -150,7 +146,7 @@ public class TodoController implements Controller {
     if (ctx.queryParamMap().containsKey(STATUS_KEY)) {
       String statusParam = ctx.queryParam(STATUS_KEY);
       boolean targetStatus;
-      if(statusParam.equalsIgnoreCase("complete")) {
+      if (statusParam.equalsIgnoreCase("complete")) {
         targetStatus = true;
       } else if (statusParam.equalsIgnoreCase("incomplete")) {
         targetStatus = false;
@@ -213,24 +209,10 @@ public class TodoController implements Controller {
     return sortingOrder;
   }
 
-  public String md5(String str) throws NoSuchAlgorithmException {
-    MessageDigest md = MessageDigest.getInstance("MD5");
-    byte[] hashInBytes = md.digest(str.toLowerCase().getBytes(StandardCharsets.UTF_8));
-
-    StringBuilder result = new StringBuilder();
-    for (byte b : hashInBytes) {
-      result.append(String.format("%02x", b));
-    }
-    return result.toString();
-  }
-
-
-
-
   //Limiting the number of todos that are displayed
 
   private int limit(Context ctx) {
-    if(ctx.queryParamMap().containsKey(LIMIT_KEY)) {
+    if (ctx.queryParamMap().containsKey(LIMIT_KEY)) {
       int targetLimit = ctx.queryParamAsClass(LIMIT_KEY, Integer.class)
       .check(it -> it > 0, "Limit should be greater than 0. You gave" + ctx.queryParam(LIMIT_KEY))
       .get();
