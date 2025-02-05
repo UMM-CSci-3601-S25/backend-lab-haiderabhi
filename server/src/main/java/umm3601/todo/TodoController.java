@@ -111,7 +111,7 @@ public class TodoController implements Controller {
     ArrayList<Todo> matchingTodos = todoCollection
       .find(combinedFilter)
       .sort(sortingOrder)
-//      .limit(limit(ctx))
+      .limit(limit(ctx))
       .into(new ArrayList<>());
 
     // Set the JSON body of the response to be the list of todos returned by the database.

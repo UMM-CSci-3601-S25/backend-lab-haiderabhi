@@ -197,33 +197,115 @@ import umm3601.user.UserController;
      // Specifically, we want to pay attention to the ArrayList<User> that
      // is passed as input when ctx.json is called --- what is the argument
      // that was passed? We capture it and can refer to it later.
-    //verify(ctx).json(todoArrayListCaptor.capture());
-  //  verify(ctx).status(HttpStatus.OK);
+    verify(ctx).json(todoArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
 
      // Check that the database collection holds the same number of documents
      // as the size of the captured List<User>
-  //   assertEquals(
-  //       db.getCollection("todos").countDocuments(),
-  //       userArrayListCaptor.getValue().size());
-  // }
+       assertEquals(
+        db.getCollection("todos").countDocuments(),
+        todoArrayListCaptor.getValue().size());
+   }
 
-  //@Test
-  //void canGetTodosWithStatusTrue() throws IOException {
-  //  Map<String, List<String>> queryParams = new HashMap<>();
+   @Test
+   void canGetTodosWithLimit() throws IOException {
+   Map<String, List<String>> queryParams = new HashMap<>();
+   Integer limit = 2;
+   String limitString = limit.toString();
 
-  //  queryParams.put(UserController.STATUS_KEY, Arrays.asList(new String[] {"true"}));
-  //  when(ctx.queryParamMap()).thenReturn(queryParams);
-  //  when(ctx.queryParam(UserController.STATUS_KEY)).thenReturn("true");
+   queryParams.put(TodoController.LIMIT_KEY, Arrays.asList(new String[] {limitString}));
+   when(ctx.queryParamMap()).thenReturn(queryParams);
 
-  //  todoController.getTodos(ctx);
+   // Create a validator that confirms that when we ask for the value associated with
+   // `LIMIT_KEY` _as an integer_, we get back the integer value 2.
+   Validation validation = new Validation();
+   Validator<Integer> validator = validation.validator(TodoController.LIMIT_KEY,Integer.class, limitString);
+   when(ctx.queryParamAsClass(TodoController.LIMIT_KEY, Integer.class)).thenReturn(validator);
+   when(ctx.queryParam(TodoController.LIMIT_KEY)).thenReturn(limitString);
 
-  //  verify(ctx).json(userArrayListCaptor.capture());
-  //  verify(ctx).status(HttpStatus.OK);
+   todoController.getTodos(ctx);
+   verify(ctx).json(todoArrayListCaptor.capture());
+   verify(ctx).status(HttpStatus.OK);
 
-  //  for (Todo todo : todoArrayListCaptor.getValue()) {
-  //    assertTrue(todo.status);
-  //  }
-  //}
+   // Confirm that there are only 2 values returned since we limited to 2.
+   assertEquals(2, todoArrayListCaptor.getValue().size());
+   }
+
+
+  @Test
+  void canGetTodosWithStatusTrue() throws IOException {
+    Map<String, List<String>> queryParams = new HashMap<>();
+
+    Boolean status = true;
+    String statusString = "complete";
+
+    queryParams.put(TodoController.STATUS_KEY, Arrays.asList(new String[] {statusString}));
+    when(ctx.queryParamMap()).thenReturn(queryParams);
+    when(ctx.queryParam(TodoController.STATUS_KEY)).thenReturn(statusString);
+
+    todoController.getTodos(ctx);
+
+    //Validation validation = new Validation();
+
+
+
+   verify(ctx).json(todoArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+   for (Todo todo : todoArrayListCaptor.getValue()) {
+    assertTrue(todo.status);
+   }
+  }
+
+  @Test
+  void canGetTodosWithStatusFalse() throws IOException {
+    Map<String, List<String>> queryParams = new HashMap<>();
+
+    Boolean status = false;
+    String statusStringF = "incomplete";
+
+    queryParams.put(TodoController.STATUS_KEY, Arrays.asList(new String[] {statusStringF}));
+    when(ctx.queryParamMap()).thenReturn(queryParams);
+    when(ctx.queryParam(TodoController.STATUS_KEY)).thenReturn(statusStringF);
+
+    todoController.getTodos(ctx);
+
+    //Validation validation = new Validation();
+
+
+
+   verify(ctx).json(todoArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+   for (Todo todo : todoArrayListCaptor.getValue()) {
+    assertFalse(todo.status);
+   }
+  }
+
+@Test
+void canGetTodosWithCategory() throws IOException {
+  Map<String, List<String>> queryParams = new HashMap<>();
+  String categoryString = "homework";
+  queryParams.put(TodoController.CATEGORY_KEY, Arrays.asList(new String[] {categoryString}));
+  when(ctx.queryParamMap()).thenReturn(queryParams);
+
+Validation validation = new Validation();
+    Validator<String> validator = validation.validator(TodoController.CATEGORY_KEY, String.class, categoryString);
+
+  when(ctx.queryParamAsClass(TodoController.CATEGORY_KEY,String.class)).thenReturn(validator);
+
+  todoController.getTodos(ctx);
+
+  verify(ctx).json(todoArrayListCaptor.capture());
+  verify(ctx).status(HttpStatus.OK);
+
+  for (Todo todo : todoArrayListCaptor.getValue()) {
+    assertEquals(categoryString, todo.category);
+  }
+
+
+}
+
 
   @Test
   void getTodoWithExistentId() throws IOException {
